@@ -1,21 +1,21 @@
-var config = require("../config");
-var request = require("../request");
-var winston = require("winston");
+const config = require("../config");
+const request = require("../request");
+const winston = require("winston");
 
-var headers = {
+const headers = {
     "User-Agent": "niantic"
 };
 
 module.exports = function (options, done) {
-    var requestOptions = {
+    let requestOptions = {
         url: config.loginUrl,
         headers: headers
     };
 
-    request.get(requestOptions, function (err, response, body) {
+    request.get(requestOptions, (err, response, body) => {
         if (err) return done(err);
 
-        var data = JSON.parse(body);
+        const data = JSON.parse(body);
 
         requestOptions = {
             url: config.loginUrl,
@@ -29,15 +29,15 @@ module.exports = function (options, done) {
             headers: headers
         };
 
-        request.post(requestOptions, function (err, response, body) {
+        request.post(requestOptions, (err, response, body) => {
             if (err) return done(err);
 
             if (body) {
-                var parsedBody = JSON.parse(body);
+                const parsedBody = JSON.parse(body);
                 if (parsedBody.errors && parsedBody.errors.length !== 0) return done(new Error("Error logging in: " + parsedBody.errors[0]));
             }
 
-            var ticket = response.headers["location"].split("ticket=")[1];
+            const ticket = response.headers["location"].split("ticket=")[1];
 
             requestOptions = {
                 url: config.loginOauth,
@@ -51,8 +51,8 @@ module.exports = function (options, done) {
                 headers: headers
             };
 
-            request.post(requestOptions, function (err, response, body) {
-                var token;
+            request.post(requestOptions, (err, response, body) => {
+                let token;
 
                 if (err) return done(err);
 
@@ -64,8 +64,6 @@ module.exports = function (options, done) {
                 winston.info("[i] Session token: " + token);
                 done(null, token);
             });
-
         });
-
     });
 };

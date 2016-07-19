@@ -1,16 +1,16 @@
-var config = require("./config");
-var request = require("./request");
-var RequestEnvelop = require("./envelops").Request;
-var ResponseEnvelop = require("./envelops").Response;
-var winston = require("winston");
+const config = require("./config");
+const request = require("./request");
+const RequestEnvelop = require("./envelops").Request;
+const ResponseEnvelop = require("./envelops").Response;
+const winston = require("winston");
 
-module.exports = function (options, req, done) {
-    var auth = new RequestEnvelop.AuthInfo({
+module.exports = (options, req, done) => {
+    const auth = new RequestEnvelop.AuthInfo({
         "provider": options.provider || "google",
         "token": new RequestEnvelop.AuthInfo.JWT(options.token, 59)
     });
 
-    var requestEnvelop = new RequestEnvelop({
+    const requestEnvelop = new RequestEnvelop({
         "unknown1": 2,
         "rpc_id": 1469378659230941192,
         "requests": req,
@@ -21,7 +21,7 @@ module.exports = function (options, req, done) {
         "unknown12": 989
     });
 
-    var requestOptions = {
+    const requestOptions = {
         url: config.apiUrl,
         body: requestEnvelop.encode().toBuffer(),
         encoding: null,
@@ -30,21 +30,23 @@ module.exports = function (options, req, done) {
         }
     };
 
-    request.post(requestOptions, function (err, response, body) {
+    request.post(requestOptions, (err, response, body) => {
+        let responseEnvelop;
+
         if (response === undefined || body === undefined) {
             winston.error("[!] RPC Server offline");
             return done(new Error("RPC Server offline"));
         }
 
         try {
-            var responseEnvelope = ResponseEnvelop.decode(body);
+            responseEnvelop = ResponseEnvelop.decode(body);
         } catch (e) {
             if (e.decoded) { // Truncated
                 winston.info(e);
-                responseEnvelope = e.decoded; // Decoded message with missing required fields
+                responseEnvelop = e.decoded; // Decoded message with missing required fields
             }
         }
 
-        return done(null, responseEnvelope);
+        return done(null, responseEnvelop);
     });
 };

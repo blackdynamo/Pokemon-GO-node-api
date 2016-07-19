@@ -14,9 +14,9 @@ module.exports = function (options, req, done) {
         "unknown1": 2,
         "rpc_id": 1469378659230941192,
         "requests": req,
-        "latitude": self.playerInfo.latitude,
-        "longitude": self.playerInfo.longitude,
-        "altitude": self.playerInfo.altitude,
+        "latitude": option.geo.latitude,
+        "longitude": options.geo.longitude,
+        "altitude": options.geo.altitude,
         "auth": auth,
         "unknown12": 989
     });
